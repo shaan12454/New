@@ -1,0 +1,21 @@
+<!-- student_register.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Student Registration</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="dark">
+    <div class="form-container">
+        <h2>Register Student</h2>
+        <form action="/student_register" method="post">
+            <input type="text" name="student_id" placeholder="Student ID" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <input type="text" name="name" placeholder="Full Name" required>
+            <input type="date" name="dob" required>
+            <button type="submit">Register</button>
+        </form>
+    </div>
+</body>
+</html>

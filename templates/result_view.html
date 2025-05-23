@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Student Results</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #2f3136;
+      color: white;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      display: flex;
+      justify-content: space-between;
+      padding: 20px;
+    }
+
+    .student-info {
+      width: 30%;
+      padding: 20px;
+      border-radius: 20px;
+      background-color: #36393f;
+      border: 2px solid #40444b;
+      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+    }
+
+    .emoji-icon {
+      font-size: 100px;
+      text-align: center;
+      background-color: #202225;
+      border-radius: 50%;
+      width: 150px;
+      height: 150px;
+      line-height: 150px;
+      margin: 0 auto 20px auto;
+    }
+
+    .student-info h3 {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .student-info p {
+      margin: 10px 0;
+      font-size: 16px;
+    }
+
+    .graph {
+      width: 68%;
+      padding: 20px;
+      border-radius: 20px;
+      background-color: #36393f;
+      border: 2px solid #40444b;
+    }
+
+    .result-list {
+      margin-top: 20px;
+      list-style: none;
+      padding: 0;
+    }
+
+    .result-list li {
+      margin: 10px 0;
+      padding: 10px;
+      border: 1px solid #40444b;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .result-list li:hover {
+      background-color: #7289da;
+    }
+
+    .overall-performance {
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .test-details {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #36393f;
+      border-radius: 8px;
+      border: 1px solid #40444b;
+    }
+
+    .button {
+      display: inline-block;
+      padding: 10px 20px;
+      margin: 10px;
+      background-color: #7289da;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .button:hover {
+      background-color: #5b6e8a;
+    }
+  </style>
+</head>
+<body>
+
+  <h1 style="text-align:center; padding-top: 20px;">{{ student_name }}'s Results</h1>
+
+  <div class="container">
+    <!-- Student Info -->
+    <div class="student-info">
+      <h3>Student Info</h3>
+      <div class="emoji-icon">🎓</div>
+      <p><strong>Name:</strong> {{ student_name }}</p>
+      <p><strong>DOB:</strong> {{ student_dob }}</p>
+      <p><strong>Age:</strong> {{ student_age }}</p>
+    </div>
+
+    <!-- Results and Graph -->
+    <div class="graph">
+      <h3>Results</h3>
+      <ul class="result-list">
+        {% for result in results %}
+        <li onclick="showGraph('{{ result.subject }}', {{ result.marks }}, {{ result.max_marks }}, '{{ result.teacher_name }}', '{{ result.date }}')">
+
+            <strong>{{ result.subject }}</strong>
+            <p>Marks: {{ result.marks }} / {{ result.max_marks }}</p>
+          </li>
+        {% endfor %}
+      </ul>
+
+      <!-- Chart -->
+      <canvas id="performanceChart"></canvas>
+
+      <!-- Test Details -->
+      <div id="testDetails" class="test-details" style="display: none;">
+        <p><strong>Teacher:</strong> <span id="teacherName"></span></p>
+        <p><strong>Date:</strong> <span id="testDate"></span></p>
+        <p><strong>Subject Score:</strong> <span id="subjectScore"></span></p>
+      </div>
+
+      <!-- Overall Performance -->
+      <div class="overall-performance">
+        <a href="javascript:void(0);" class="button" onclick="showOverallPerformance()">Show Overall Performance</a>
+      </div>
+    </div>
+  </div>
+<script>
+  var performanceData = {{ performance_data | safe }};
+  var chartInstance = null;
+
+  function showGraph(subject, marks, maxMarks, teacher, date) {
+    const ctx = document.getElementById('performanceChart').getContext('2d');
+
+    if (chartInstance) chartInstance.destroy();
+
+    chartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: [subject],
+        datasets: [
+          {
+            label: 'Marks Obtained',
+            data: [marks],
+            backgroundColor: 'rgba(75, 192, 192, 0.6)'
+          },
+          {
+            label: 'Max Marks',
+            data: [maxMarks],
+            backgroundColor: 'rgba(255, 99, 132, 0.6)'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+
+    // Show test info
+    document.getElementById("testDetails").style.display = "block";
+    document.getElementById("teacherName").innerText = teacher;
+    document.getElementById("testDate").innerText = date;
+    document.getElementById("subjectScore").innerText = `${marks} / ${maxMarks}`;
+  }
+
+  function showOverallPerformance() {
+    const ctx = document.getElementById('performanceChart').getContext('2d');
+    if (chartInstance) chartInstance.destroy();
+
+    chartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: performanceData.subjects,
+        datasets: [{
+          label: 'Marks Obtained',
+          data: performanceData.marks,
+          backgroundColor: 'rgba(54, 162, 235, 0.6)'
+        },
+        {
+          label: 'Max Marks',
+          data: performanceData.max_marks,
+          backgroundColor: 'rgba(255, 206, 86, 0.6)'
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+
+    document.getElementById("testDetails").style.display = "none";
+  }
+</script>
+
+
+
+</body>
+</html>
